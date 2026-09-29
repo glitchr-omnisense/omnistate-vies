@@ -1,0 +1,19 @@
+{
+  "countryCode" : "FR",
+  "vatNumber" : "53901821074",
+  "requestDate" : "2026-09-29T15:11:33.653Z",
+  "valid" : true,
+  "requestIdentifier" : "",
+  "name" : "SARL GLITCH ART",
+  "address" : "5 RUE VINCENT SCOTTO\n67400 ILLKIRCH GRAFFENSTADEN",
+  "traderName" : "---",
+  "traderStreet" : "---",
+  "traderPostalCode" : "---",
+  "traderCity" : "---",
+  "traderCompanyType" : "---",
+  "traderNameMatch" : "NOT_PROCESSED",
+  "traderStreetMatch" : "NOT_PROCESSED",
+  "traderPostalCodeMatch" : "NOT_PROCESSED",
+  "traderCityMatch" : "NOT_PROCESSED",
+  "traderCompanyTypeMatch" : "NOT_PROCESSED"
+}

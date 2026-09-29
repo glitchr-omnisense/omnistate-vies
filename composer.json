@@ -1,0 +1,20 @@
+{
+    "name": "omnistate/vies",
+    "type": "library",
+    "description": "Omnistate VIES: EU VAT numbers checked with the European Commission's VIES (REST - no SOAP extension needed), with a consultation number as proof.",
+    "keywords": ["vat", "vies", "eu", "intra-community", "reverse charge", "omnistate"],
+    "license": "LGPL-3.0-or-later",
+    "authors": [{"name": "Marco Meyer", "email": "marco.meyer@glitchr.io"}],
+    "require": {
+        "php": ">=8.2",
+        "glitchr/omnistate": "^1.0@dev",
+        "symfony/http-client-contracts": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "symfony/http-client": "^6.4|^7.0|^8.0"
+    },
+    "autoload": {"psr-4": {"Omnistate\\Vies\\": ""}, "exclude-from-classmap": ["/Tests/"]},
+    "autoload-dev": {"psr-4": {"Omnistate\\Vies\\Tests\\": "Tests/"}},
+    "config": {"sort-packages": true}
+}
