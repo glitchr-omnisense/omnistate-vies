@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Omnistate VIES: EU VAT numbers checked with the European Commission's VIES (REST - no SOAP extension needed), with a consultation number as proof.",
     "keywords": ["vat", "vies", "eu", "intra-community", "reverse charge", "omnistate"],
-    "license": "LGPL-3.0-or-later",
+    "license": "MIT",
     "authors": [{"name": "Marco Meyer", "email": "marco.meyer@glitchr.io"}],
     "require": {
         "php": ">=8.2",

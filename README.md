@@ -16,3 +16,7 @@ plain PHP, a `MockHttpClient` in a test.
 
 A member state's service down (`MS_UNAVAILABLE`, they have their hours) throws `UnavailableException`:
 it is not a number that does not exist. Numbers are checked for their shape first by `Omnistate::vat()`.
+
+## License
+
+MIT since 2026-10-09; earlier versions remain published under LGPL-3.0-or-later.
