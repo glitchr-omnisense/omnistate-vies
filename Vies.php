@@ -50,6 +50,11 @@ final class Vies implements VatRegistryInterface
 
         try {
             $response = $this->http->request('POST', self::URL, ['json' => $query, 'timeout' => $this->timeout]);
+            if (429 === $response->getStatusCode()) {
+                $retry = $response->getHeaders(false)['retry-after'][0] ?? null;
+
+                throw new UnavailableException('VIES: too many calls.', is_numeric($retry) ? max(1, (int) $retry) : 60);
+            }
             $answer = $response->toArray(false);
         } catch (ExceptionInterface $e) {
             throw new UnavailableException('VIES did not answer: '.$e->getMessage(), null, $e);
