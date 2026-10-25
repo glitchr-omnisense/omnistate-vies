@@ -32,7 +32,7 @@ make no commercial use of it, and accept no liability for how it is used (see [L
 
 ## Documentation
 
-[docs/](docs/index.md): the service, the options, what it supports, how it maps the answers, errors, what was verified.
+[docs/](docs/index.md): the service, the options, what it supports, how it maps the answers, errors, verified and not.
 
 ## License
 
