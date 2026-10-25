@@ -128,6 +128,9 @@ omnistate:
 | HTTP 429 | `UnavailableException` (`VIES: too many calls.`), `retryAfter` from `Retry-After` (at least 1), else 60 |
 | no answer, a body that is not JSON (an HTML error page) | `UnavailableException` (`VIES did not answer: ...`) |
 
+> [!WARNING]
+> Known defect: any VIES error outside these seven (`INVALID_INPUT`, `INVALID_REQUESTER_INFO`...) gives `valid: false` (`Vies.php:63-73`), where a refused check is not an invalid number: a refused requester makes a valid number look invalid.
+
 A member state's service that does not answer is never a number that does not exist.
 
 ## Verified, and not
