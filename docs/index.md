@@ -1,6 +1,6 @@
 # omnistate/vies
 
-EU VAT numbers for [omniscient/omnistate](https://github.com/glitchr-studio/omnistate), checked
+EU VAT numbers for [omnisense/omnistate](https://github.com/glitchr-omnisense/omnistate), checked
 with the European Commission's [VIES](https://ec.europa.eu/taxation_customs/vies/) through its
 REST API - no SOAP extension needed. VIES relays each member state's own register: whether a
 number exists, whose it is, and - given your own VAT number - a consultation number, the proof
@@ -15,10 +15,10 @@ The address is the constant `Omnistate\Vies\Vies::URL`. There is no sandbox addr
 ## Installation
 
 ```sh
-composer require omniscient/omnistate omnistate/vies
+composer require omnisense/omnistate omnistate/vies
 ```
 
-Requires PHP 8.2, `omniscient/omnistate` (1.x) and `symfony/http-client` (6.4, 7 or 8). In a
+Requires PHP 8.2, `omnisense/omnistate` (1.x) and `symfony/http-client` (6.4, 7 or 8). In a
 Symfony application with `Omnistate\Bridge\Symfony\OmnistateBundle`, the register is registered
 (tag `omnistate.vat_registry`) as soon as the package is installed; the bundle's
 `omnistate.requester` sets your VAT number for every check.

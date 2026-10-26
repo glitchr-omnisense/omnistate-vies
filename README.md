@@ -1,7 +1,7 @@
 # omnistate/vies
 
 EU VAT numbers checked with the European Commission's [VIES](https://ec.europa.eu/taxation_customs/vies/),
-for [omniscient/omnistate](../core). Its REST API: no SOAP extension needed.
+for [omnisense/omnistate](../core). Its REST API: no SOAP extension needed.
 
 ```php
 $check = (new Vies($httpClient))->check('FR53901821074', requester: 'FR...');
@@ -10,7 +10,7 @@ $check->name;                // "SARL GLITCH ART"
 $check->consultationNumber;  // the proof you checked it that day - keep it with a reverse-charge invoice
 ```
 
-No framework needed: the package requires `omniscient/omnistate` and `symfony/http-client`.
+No framework needed: the package requires `omnisense/omnistate` and `symfony/http-client`.
 `$httpClient` is the HTTP client to call with - the application's, `HttpClient::create()` in
 plain PHP, a `MockHttpClient` in a test.
 
