@@ -57,16 +57,20 @@ is `vies`, the `source` of every `VatCheck`.
 the facade does it (`Omnistate::vat()`), and refuses a number with no member state's shape before
 any request.
 
-**The answer.** `valid` is VIES's `valid` (`false` when it is missing and an error was given, see
-below); `name` and `address` are VIES's, `---` read as nothing and the address's lines joined by
+**The answer.** `valid` is VIES's `valid`, given only when VIES gave no error or its verdict
+(`userError` `VALID` or `INVALID`); `name` and `address` are VIES's, `---` read as nothing and the address's lines joined by
 `, `; `checkedAt` is VIES's `requestDate`, else the moment of the call; `consultationNumber` is
 `requestIdentifier`, `null` when empty.
 
-**Unavailable.** VIES's error (the first `errorWrappers[].error`, else `userError`) is an
-`UnavailableException` when it is one of `MS_UNAVAILABLE` (`retryAfter` 600 s), `TIMEOUT`,
-`SERVICE_UNAVAILABLE`, `MS_MAX_CONCURRENT_REQ`, `GLOBAL_MAX_CONCURRENT_REQ`, `SERVER_BUSY`,
-`IP_BLOCKED`; so is an answer with neither `valid` nor an error. Another error code is read as a
-check whose `valid` is the answer's, `false` when missing.
+**Refused, unavailable.** VIES's error (the first `errorWrappers[].error`, else `userError`) is
+never read as a number that does not exist. `INVALID_INPUT`, `INVALID_REQUESTER_INFO` and
+`VAT_BLOCKED` refuse the question itself (asking again gives the same answer): an
+`OmnistateException` naming the code. Any other error is an `UnavailableException`:
+`MS_UNAVAILABLE` (`retryAfter` 600 s), `TIMEOUT`, `SERVICE_UNAVAILABLE`, `MS_MAX_CONCURRENT_REQ`,
+`GLOBAL_MAX_CONCURRENT_REQ` and their `_TIME` variants, `SERVER_BUSY`, `IP_BLOCKED`, and a code
+VIES may add; so is an answer without `valid`. The codes are VIES's fault strings
+([technical information](https://ec.europa.eu/taxation_customs/vies/#/technical-information),
+`checkVatService.wsdl`).
 
 **Caching.** None of its own: the facade's cache keeps checks, by number and requester.
 
@@ -122,32 +126,29 @@ omnistate:
 
 | VIES answers | The register |
 |---|---|
-| `valid: true` / `valid: false` | a `VatCheck` |
-| an error among the seven above | `UnavailableException` (`VIES: MS_MAX_CONCURRENT_REQ.`); `retryAfter` 600 for `MS_UNAVAILABLE`, else none |
-| no `valid` and no error | `UnavailableException` (`VIES: no answer.`) |
+| `valid: true` / `valid: false`, with no error or `userError` `VALID` / `INVALID` | a `VatCheck` |
+| `INVALID_INPUT`, `INVALID_REQUESTER_INFO`, `VAT_BLOCKED` | `OmnistateException` (`VIES refused the check: INVALID_REQUESTER_INFO (the requester's VAT number is refused).`) |
+| any other error | `UnavailableException` (`VIES: MS_MAX_CONCURRENT_REQ.`); `retryAfter` 600 for `MS_UNAVAILABLE`, else none |
+| no `valid` | `UnavailableException` (`VIES: no answer.`) |
 | HTTP 429 | `UnavailableException` (`VIES: too many calls.`), `retryAfter` from `Retry-After` (at least 1), else 60 |
 | no answer, a body that is not JSON (an HTML error page) | `UnavailableException` (`VIES did not answer: ...`) |
 
-> [!WARNING]
-> Known defect: any VIES error outside these seven (`INVALID_INPUT`, `INVALID_REQUESTER_INFO`...) gives `valid: false` (`Vies.php:63-73`), where a refused check is not an invalid number: a refused requester makes a valid number look invalid.
-
-A member state's service that does not answer is never a number that does not exist.
+A member state's service that does not answer, or a check VIES refuses, is never a number that
+does not exist.
 
 ## Verified, and not
 
 Tested offline: `Tests/ViesTest.php` (a valid number, its name and address, the request's body
 with the requester; an unknown number with `---` read as nothing; `MS_UNAVAILABLE` with its 600 s;
-VIES unreachable) on answers recorded in `Tests/Fixtures`, and `Tests/ViesContractTest.php`,
+VIES unreachable; the three refusals as an `OmnistateException`, the `_TIME` limits and an unknown
+code as an `UnavailableException`, whatever the HTTP status; VIES's verdicts `VALID` and `INVALID`)
+on answers recorded in `Tests/Fixtures`, and `Tests/ViesContractTest.php`,
 omnistate's conformance suite.
 
 Run live on 2026-10-25 (the example above): two numbers checked; earlier the same day France's
 service answered `MS_MAX_CONCURRENT_REQ`, read as unavailable. Not run: a check with a requester
-(no consultation number seen live here).
-
-Defect found in the code: `Vies.php:63-73` - only the seven error codes above are unavailable;
-any other (`INVALID_INPUT`, `INVALID_REQUESTER_INFO`...) gives a `VatCheck` whose `valid` is
-`false` when the answer has no `valid`: a requester VIES refuses can make a valid number read as
-not valid.
+(no consultation number seen live here), and none of the refusals: their shape follows VIES's
+documentation, not a live answer.
 
 ## Responsibility
 

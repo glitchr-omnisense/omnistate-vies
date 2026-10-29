@@ -2,6 +2,7 @@
 
 namespace Omnistate\Vies;
 
+use Omnistate\Exception\OmnistateException;
 use Omnistate\Exception\UnavailableException;
 use Omnistate\Identifier\VatNumber;
 use Omnistate\Model\VatCheck;
@@ -16,14 +17,32 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * client's number that day, to keep with a reverse-charge invoice.
  *
  * VIES only relays: a member state's service down (they have their hours)
- * is not a number that does not exist - that is an UnavailableException.
+ * is not a number that does not exist - that is an UnavailableException. A
+ * check VIES refuses (a requester it does not accept...) is an
+ * OmnistateException: only VIES's "valid" says whether a number exists.
  */
 final class Vies implements VatRegistryInterface
 {
     public const URL = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
 
-    /** VIES's errors that mean "ask again later", not "no such number". */
-    private const UNAVAILABLE = ['MS_UNAVAILABLE', 'TIMEOUT', 'SERVICE_UNAVAILABLE', 'MS_MAX_CONCURRENT_REQ', 'GLOBAL_MAX_CONCURRENT_REQ', 'SERVER_BUSY', 'IP_BLOCKED'];
+    /**
+     * VIES's verdicts, given as userError beside "valid": the number's answer.
+     * Any other error means the check was not made.
+     */
+    private const VERDICTS = ['VALID', 'INVALID'];
+
+    /**
+     * VIES's errors that refuse the question itself (its fault strings,
+     * checkVatService.wsdl): asking again later gives the same answer.
+     * Any other error is "ask again later" (MS_UNAVAILABLE, TIMEOUT,
+     * SERVICE_UNAVAILABLE, the *_MAX_CONCURRENT_REQ[_TIME] limits,
+     * SERVER_BUSY, IP_BLOCKED, and what VIES may add).
+     */
+    private const REFUSED = [
+        'INVALID_INPUT' => 'the country code or the number is not one VIES takes',
+        'INVALID_REQUESTER_INFO' => 'the requester\'s VAT number is refused',
+        'VAT_BLOCKED' => 'the number cannot be checked',
+    ];
 
     public function __construct(
         private readonly HttpClientInterface $http,
@@ -61,7 +80,11 @@ final class Vies implements VatRegistryInterface
         }
 
         $error = $answer['errorWrappers'][0]['error'] ?? $answer['userError'] ?? null;
-        if (\in_array($error, self::UNAVAILABLE, true) || (!\array_key_exists('valid', $answer) && null === $error)) {
+        $error = \is_string($error) && '' !== trim($error) ? strtoupper(trim($error)) : null;
+        if (null !== $error && isset(self::REFUSED[$error])) {
+            throw new OmnistateException(sprintf('VIES refused the check: %s (%s).', $error, self::REFUSED[$error]));
+        }
+        if ((null !== $error && !\in_array($error, self::VERDICTS, true)) || !\array_key_exists('valid', $answer)) {
             throw new UnavailableException(sprintf('VIES: %s.', $error ?? 'no answer'), 'MS_UNAVAILABLE' === $error ? 600 : null);
         }
 
