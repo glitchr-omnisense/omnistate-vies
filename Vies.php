@@ -2,6 +2,8 @@
 
 namespace Omnistate\Vies;
 
+use Omnisense\Contracts\Policy\DeclaresUsagePolicyInterface;
+use Omnisense\Contracts\Policy\UsagePolicy;
 use Omnistate\Exception\OmnistateException;
 use Omnistate\Exception\UnavailableException;
 use Omnistate\Identifier\VatNumber;
@@ -21,7 +23,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * check VIES refuses (a requester it does not accept...) is an
  * OmnistateException: only VIES's "valid" says whether a number exists.
  */
-final class Vies implements VatRegistryInterface
+final class Vies implements VatRegistryInterface, DeclaresUsagePolicyInterface
 {
     public const URL = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
 
@@ -50,6 +52,12 @@ final class Vies implements VatRegistryInterface
     ) {
     }
 
+    /** Its usage policy: policy.json, beside this class. */
+    public function usagePolicy(): UsagePolicy
+    {
+        return UsagePolicy::fromFile(__DIR__.'/policy.json');
+    }
+
     public function name(): string
     {
         return 'vies';
@@ -72,7 +80,7 @@ final class Vies implements VatRegistryInterface
             if (429 === $response->getStatusCode()) {
                 $retry = $response->getHeaders(false)['retry-after'][0] ?? null;
 
-                throw new UnavailableException('VIES: too many calls.', is_numeric($retry) ? max(1, (int) $retry) : 60);
+                throw new UnavailableException('VIES: too many calls.', is_numeric($retry) ? max(1, (int) $retry) : 60, null, 429);
             }
             $answer = $response->toArray(false);
         } catch (ExceptionInterface $e) {
