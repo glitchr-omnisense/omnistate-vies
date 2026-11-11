@@ -15,9 +15,10 @@ final class ViesTest extends TestCase
     {
         $sent = null;
         $vies = new Vies(new MockHttpClient(function (string $method, string $url, array $options) use (&$sent) {
+            self::assertIsString($options['body']);
             $sent = json_decode($options['body'], true);
 
-            return new MockResponse(file_get_contents(__DIR__.'/Fixtures/valid.json'));
+            return new MockResponse((string) file_get_contents(__DIR__.'/Fixtures/valid.json'));
         }));
         $check = $vies->check('FR53901821074', 'FR53901821074');
 
@@ -30,7 +31,7 @@ final class ViesTest extends TestCase
 
     public function testAnUnknownNumber(): void
     {
-        $check = (new Vies(new MockHttpClient(new MockResponse(file_get_contents(__DIR__.'/Fixtures/invalid.json')))))->check('DE000000000');
+        $check = (new Vies(new MockHttpClient(new MockResponse((string) file_get_contents(__DIR__.'/Fixtures/invalid.json')))))->check('DE000000000');
 
         self::assertFalse($check->valid);
         self::assertNull($check->name, '"---" is nothing');
@@ -77,6 +78,7 @@ final class ViesTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string, int, bool}> */
     public static function errors(): iterable
     {
         yield 'INVALID_REQUESTER_INFO' => ['{"actionSucceed":false,"errorWrappers":[{"error":"INVALID_REQUESTER_INFO"}]}', 400, true];
@@ -90,7 +92,7 @@ final class ViesTest extends TestCase
 
     public function testVIESsOwnVerdictIsTheAnswer(): void
     {
-        $answer = static fn (bool $valid, string $verdict) => new MockResponse(json_encode(['countryCode' => 'FR', 'vatNumber' => '53901821074', 'requestDate' => '2026-10-29T09:00:00.000Z', 'valid' => $valid, 'userError' => $verdict, 'name' => '---', 'address' => '---']));
+        $answer = static fn (bool $valid, string $verdict) => new MockResponse((string) json_encode(['countryCode' => 'FR', 'vatNumber' => '53901821074', 'requestDate' => '2026-10-29T09:00:00.000Z', 'valid' => $valid, 'userError' => $verdict, 'name' => '---', 'address' => '---']));
 
         self::assertTrue((new Vies(new MockHttpClient($answer(true, 'VALID'))))->check('FR53901821074')->valid);
         self::assertFalse((new Vies(new MockHttpClient($answer(false, 'INVALID'))))->check('FR53901821074')->valid);

@@ -87,7 +87,7 @@ final class Vies implements VatRegistryInterface, DeclaresUsagePolicyInterface
             throw new UnavailableException('VIES did not answer: '.$e->getMessage(), null, $e);
         }
 
-        $error = $answer['errorWrappers'][0]['error'] ?? $answer['userError'] ?? null;
+        $error = self::at($answer, 'errorWrappers', 0, 'error') ?? $answer['userError'] ?? null;
         $error = \is_string($error) && '' !== trim($error) ? strtoupper(trim($error)) : null;
         if (null !== $error && isset(self::REFUSED[$error])) {
             throw new OmnistateException(sprintf('VIES refused the check: %s (%s).', $error, self::REFUSED[$error]));
@@ -96,7 +96,7 @@ final class Vies implements VatRegistryInterface, DeclaresUsagePolicyInterface
             throw new UnavailableException(sprintf('VIES: %s.', $error ?? 'no answer'), 'MS_UNAVAILABLE' === $error ? 600 : null);
         }
 
-        $clean = static fn (mixed $value): ?string => \is_string($value) && '' !== trim($value) && '---' !== trim($value) ? trim(preg_replace('/\s*\n\s*/', ', ', $value)) : null;
+        $clean = static fn (mixed $value): ?string => \is_string($value) && '' !== trim($value) && '---' !== trim($value) ? trim(preg_replace('/\s*\n\s*/', ', ', $value) ?? '') : null;
         $date = \is_string($answer['requestDate'] ?? null) ? new \DateTimeImmutable($answer['requestDate']) : new \DateTimeImmutable();
 
         return new VatCheck(
@@ -108,5 +108,22 @@ final class Vies implements VatRegistryInterface, DeclaresUsagePolicyInterface
             $clean($answer['address'] ?? null),
             $clean($answer['requestIdentifier'] ?? null),
         );
+    }
+
+    /**
+     * $value[$key][...] ?? null, as PHP reads it: an array's item, a string's
+     * character at an integer offset, null for anything else.
+     */
+    private static function at(mixed $value, string|int ...$keys): mixed
+    {
+        foreach ($keys as $key) {
+            if (\is_array($value) || (\is_string($value) && \is_int($key))) {
+                $value = $value[$key] ?? null;
+            } else {
+                return null;
+            }
+        }
+
+        return $value;
     }
 }
