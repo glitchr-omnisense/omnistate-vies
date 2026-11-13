@@ -20,13 +20,13 @@ final class ViesTest extends TestCase
 
             return new MockResponse((string) file_get_contents(__DIR__.'/Fixtures/valid.json'));
         }));
-        $check = $vies->check('FR53901821074', 'FR53901821074');
+        $check = $vies->check('FR27552032534', 'FR27552032534');
 
         self::assertTrue($check->valid);
-        self::assertSame('SARL GLITCH ART', $check->name);
-        self::assertSame('5 RUE VINCENT SCOTTO, 67400 ILLKIRCH GRAFFENSTADEN', $check->address, 'its lines joined');
+        self::assertSame('SA DANONE', $check->name);
+        self::assertSame('59 61 RUE LA FAYETTE, 75009 PARIS', $check->address, 'its lines joined');
         self::assertSame('FR', $check->country());
-        self::assertSame(['countryCode' => 'FR', 'vatNumber' => '53901821074', 'requesterMemberStateCode' => 'FR', 'requesterNumber' => '53901821074'], $sent);
+        self::assertSame(['countryCode' => 'FR', 'vatNumber' => '27552032534', 'requesterMemberStateCode' => 'FR', 'requesterNumber' => '27552032534'], $sent);
     }
 
     public function testAnUnknownNumber(): void
@@ -68,7 +68,7 @@ final class ViesTest extends TestCase
         $vies = new Vies(new MockHttpClient(new MockResponse($answer, ['http_code' => $status])));
 
         try {
-            $check = $vies->check('FR53901821074', 'DE123456789');
+            $check = $vies->check('FR27552032534', 'DE123456789');
             self::fail(sprintf('An error read as a check (valid: %s).', var_export($check->valid, true)));
         } catch (UnavailableException $e) {
             self::assertFalse($refused, 'a refused question, not an unavailable VIES: '.$e->getMessage());
@@ -92,9 +92,9 @@ final class ViesTest extends TestCase
 
     public function testVIESsOwnVerdictIsTheAnswer(): void
     {
-        $answer = static fn (bool $valid, string $verdict) => new MockResponse((string) json_encode(['countryCode' => 'FR', 'vatNumber' => '53901821074', 'requestDate' => '2026-10-29T09:00:00.000Z', 'valid' => $valid, 'userError' => $verdict, 'name' => '---', 'address' => '---']));
+        $answer = static fn (bool $valid, string $verdict) => new MockResponse((string) json_encode(['countryCode' => 'FR', 'vatNumber' => '27552032534', 'requestDate' => '2026-10-29T09:00:00.000Z', 'valid' => $valid, 'userError' => $verdict, 'name' => '---', 'address' => '---']));
 
-        self::assertTrue((new Vies(new MockHttpClient($answer(true, 'VALID'))))->check('FR53901821074')->valid);
-        self::assertFalse((new Vies(new MockHttpClient($answer(false, 'INVALID'))))->check('FR53901821074')->valid);
+        self::assertTrue((new Vies(new MockHttpClient($answer(true, 'VALID'))))->check('FR27552032534')->valid);
+        self::assertFalse((new Vies(new MockHttpClient($answer(false, 'INVALID'))))->check('FR27552032534')->valid);
     }
 }

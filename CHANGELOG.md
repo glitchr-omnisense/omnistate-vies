@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-13
+
+### Changed
+- The README's example and the fixture `valid.json`: DANONE's VAT number (FR27552032534), its name
+  and address composed from the register's record, instead of a small company's.
+
 ## [1.0.0] - 2026-11-13
 
 ### Added
