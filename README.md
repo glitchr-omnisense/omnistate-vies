@@ -17,6 +17,14 @@ plain PHP, a `MockHttpClient` in a test.
 A member state's service down (`MS_UNAVAILABLE`, they have their hours) throws `UnavailableException`:
 it is not a number that does not exist. Numbers are checked for their shape first by `Omnistate::vat()`.
 
+## Install
+
+```sh
+composer require omnistate/vies
+```
+
+It brings the family's core, `omnisense/omnistate`, and `omnisense/contracts` with it. No account and no key; your own VAT number as `requester` gets a consultation number back ([`policy.json`](policy.json)).
+
 ## Responsibility
 
 This package is an independent, unofficial client: it is not affiliated with, endorsed by or
